@@ -1,0 +1,40 @@
+{
+  "name": "newInventor/type-checker",
+  "description": "type checker for base types or list of types or arrays",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Georgy Ionov",
+      "email": "newinventor20@gmail.com"
+    }
+  ],
+  "config": {
+    "vendor-dir": "vendor"
+  },
+  "autoload": {
+    "psr-4": {
+      "NewInventor\\TypeChecker\\": "src/"
+    }
+  },
+  "repositories": [
+    {
+      "type": "package",
+      "package": {
+        "name": "newInventor/singleton",
+        "version": "1.0.0",
+        "source": {
+          "url": "https://github.com/newInventor/singleton",
+          "type": "git",
+          "reference": "master"
+        }
+      }
+    }
+  ],
+  "require": {
+    "newInventor/singleton": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "5.1.*"
+  }
+}
