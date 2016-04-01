@@ -1,5 +1,5 @@
 {
-  "name": "new-inventor/type-checker",
+  "name": "new-inventor/php-type-checker",
   "description": "Type checker for base types or list of types or arrays",
   "minimum-stability": "dev",
   "license": "MIT",
