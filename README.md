@@ -34,13 +34,13 @@
 
 После проверки можно бросить исключение:
 
-```$checker->throwTypeErrorIfNotValid();```
+`$checker->throwTypeErrorIfNotValid();`
 
 при этом исключение возникнет если параметр не отвечает заданным типам.
 
 Так же можно просто получить результат проверки:
 
-```$res = $checker->result();```
+`$res = $checker->result();`
 
 ##Немного usecase'ов
 
