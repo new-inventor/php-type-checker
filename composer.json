@@ -1,7 +1,7 @@
 {
-  "name": "newInventor/type-checker",
-  "description": "type checker for base types or list of types or arrays",
-  "minimum-stability": "stable",
+  "name": "new-inventor/type-checker",
+  "description": "Type checker for base types or list of types or arrays",
+  "minimum-stability": "dev",
   "license": "MIT",
   "authors": [
     {
@@ -17,22 +17,8 @@
       "NewInventor\\TypeChecker\\": "src/"
     }
   },
-  "repositories": [
-    {
-      "type": "package",
-      "package": {
-        "name": "newInventor/singleton",
-        "version": "1.0.0",
-        "source": {
-          "url": "https://github.com/newInventor/singleton",
-          "type": "git",
-          "reference": "master"
-        }
-      }
-    }
-  ],
   "require": {
-    "newInventor/singleton": "*"
+    "new-inventor/patterns": "*"
   },
   "require-dev": {
     "phpunit/phpunit": "5.1.*"
