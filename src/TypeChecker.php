@@ -7,7 +7,7 @@
 
 namespace NewInventor\TypeChecker;
 
-use NewInventor\Singleton\SingletonTrait;
+use NewInventor\Patterns\SingletonTrait;
 use NewInventor\TypeChecker\Exception\ArgumentException;
 use NewInventor\TypeChecker\Exception\ArgumentTypeException;
 
