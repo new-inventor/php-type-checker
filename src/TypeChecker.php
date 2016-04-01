@@ -122,16 +122,12 @@ class TypeChecker
      */
     public function check($value, array $expectedTypes = [], $name = '')
     {
-        if (!is_array($expectedTypes)) {
-            $this->isValid = false;
-
-            return $this;
-        }
         if (empty($expectedTypes)) {
             $this->isValid = true;
 
             return $this;
         }
+
         if (!is_string($name)) {
             throw new ArgumentTypeException('name', [SimpleTypes::STRING], $name);
         }

@@ -33,7 +33,11 @@ class ArgumentTypeException extends \Exception
             $str .= ' Ожидался тип "' . implode('" или "', $argumentTypes) . '"';
         }
         if(!empty($value)){
-            $str .= ', получен "' . gettype($value) . '"';
+            $type = gettype($value);
+            if($type == 'object'){
+                $type = get_class($value);
+            }
+            $str .= ', получен "' . $type . '"';
         }
 
         return $str;

@@ -21,7 +21,8 @@ class TypeCheckerTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($typeChecker->check(0.10, [SimpleTypes::FLOAT])->result());
         $this->assertTrue($typeChecker->check(new \Exception(), [SimpleTypes::OBJ])->result());
         $this->assertTrue($typeChecker->check([], [SimpleTypes::ARR])->result());
-        $file = fopen(dirname(__DIR__) . '/index.php', 'r');
+        $this->assertTrue($typeChecker->check([], [])->result());
+        $file = fopen(dirname(__DIR__) . '/README.md', 'r');
         $this->assertTrue($typeChecker->check($file, [SimpleTypes::RESOURCE])->result());
 
         $this->assertFalse($typeChecker->check('', [SimpleTypes::BOOL])->result());
@@ -31,7 +32,7 @@ class TypeCheckerTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($typeChecker->check(new \Exception(), [SimpleTypes::FLOAT])->result());
         $this->assertFalse($typeChecker->check(0.10, [SimpleTypes::OBJ])->result());
         $this->assertFalse($typeChecker->check([], [SimpleTypes::RESOURCE])->result());
-        $file = fopen(dirname(__DIR__) . '/index.php', 'r');
+        $file = fopen(dirname(__DIR__) . '/README.md', 'r');
         $this->assertFalse($typeChecker->check($file, [SimpleTypes::ARR])->result());
 
         $this->assertTrue($typeChecker->check(new \Exception(), ['Exception'])->result());
