@@ -6,7 +6,7 @@
  * Time: 22:59
  */
 
-namespace NewInventor\Form\TypeChecker;
+namespace NewInventor\TypeChecker;
 
 
 trait TypeCheck

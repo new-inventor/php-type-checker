@@ -5,9 +5,9 @@
  * Time: 15:34
  */
 
-namespace NewInventor\Form\TypeChecker\Exception;
+namespace NewInventor\TypeChecker\Exception;
 
-use NewInventor\Form\TypeChecker\TypeChecker;
+use NewInventor\TypeChecker\TypeChecker;
 
 class ArgumentTypeException extends \Exception
 {

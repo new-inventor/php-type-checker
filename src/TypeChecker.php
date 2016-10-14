@@ -6,10 +6,10 @@
  * Time: 23:29
  */
 
-namespace NewInventor\Form\TypeChecker;
+namespace NewInventor\TypeChecker;
 
 
-use NewInventor\Form\TypeChecker\Exception\ArgumentTypeException;
+use NewInventor\TypeChecker\Exception\ArgumentTypeException;
 
 /**
  * Class TypeChecker
