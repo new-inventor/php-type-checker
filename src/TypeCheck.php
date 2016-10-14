@@ -11,6 +11,11 @@ namespace NewInventor\TypeChecker;
 
 trait TypeCheck
 {
+    /**
+     * @param int $paramIndex
+     *
+     * @return TypeChecker
+     */
     public static function param($paramIndex = 0)
     {
         return new TypeChecker(debug_backtrace(null)[1], $paramIndex);

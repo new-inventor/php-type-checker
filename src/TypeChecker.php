@@ -51,7 +51,7 @@ class TypeChecker
      * NewTypeChecker constructor.
      *
      * @param array $backTraceData
-     * @param int $paramIndex
+     * @param int   $paramIndex
      */
     public function __construct(array $backTraceData, $paramIndex)
     {
@@ -80,7 +80,8 @@ class TypeChecker
 
     /**
      * @param callable $callback
-     * @return $this
+     *
+     * @return TypeChecker
      */
     public function callback(callable $callback)
     {
@@ -90,7 +91,8 @@ class TypeChecker
 
     /**
      * @param string $name
-     * @return $this
+     *
+     * @return TypeChecker
      */
     protected function checkSimple($name)
     {
@@ -102,11 +104,12 @@ class TypeChecker
 
     /**
      * @param string $name
-     * @return $this
+     *
+     * @return TypeChecker
      */
     protected function checkSimpleArray($name)
     {
-        if(!is_array($this->value)){
+        if (!is_array($this->value)) {
             return $this;
         }
         $method = "is_$name";
@@ -120,7 +123,7 @@ class TypeChecker
     }
 
     /**
-     * @return $this
+     * @return TypeChecker
      */
     public function inner()
     {
@@ -131,7 +134,7 @@ class TypeChecker
     /**
      * @param string[] ...$types
      *
-     * @return $this
+     * @return TypeChecker
      */
     public function types(...$types)
     {
@@ -140,7 +143,7 @@ class TypeChecker
             return $this;
         }
 
-        if($this->inner && is_array($this->value)){
+        if ($this->inner && is_array($this->value)) {
             $res = true;
             $this->innerTypes = array_merge($this->innerTypes, $types);
             foreach ($this->value as $item) {
