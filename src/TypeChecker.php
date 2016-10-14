@@ -72,6 +72,7 @@ class TypeChecker
     /** @noinspection MagicMethodsValidityInspection */
     public function __get($name)
     {
+        $name = substr($name, 1);
         if ($this->inner) {
             return $this->checkSimpleArray($name);
         }
