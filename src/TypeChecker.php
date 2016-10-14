@@ -1,212 +1,178 @@
 <?php
 /**
- * User: Ionov George
- * Date: 21.03.2016
- * Time: 13:10
+ * Created by PhpStorm.
+ * User: inventor
+ * Date: 16.09.2016
+ * Time: 23:29
  */
 
-namespace NewInventor\TypeChecker;
+namespace NewInventor\Form\TypeChecker;
 
-use NewInventor\Patterns\SingletonTrait;
-use NewInventor\TypeChecker\Exception\ArgumentException;
-use NewInventor\TypeChecker\Exception\ArgumentTypeException;
 
+use NewInventor\Form\TypeChecker\Exception\ArgumentTypeException;
+
+/**
+ * Class TypeChecker
+ * @package NewInventor\Form\TypeChecker
+ * @property TypeChecker ​tarray
+ * @property TypeChecker tbool
+ * @property TypeChecker ​tcallable
+ * @property TypeChecker tdouble
+ * @property TypeChecker tfloat
+ * @property TypeChecker tint
+ * @property TypeChecker tinteger
+ * @property TypeChecker tlong
+ * @property TypeChecker ​tnull
+ * @property TypeChecker tnumeric
+ * @property TypeChecker tobject
+ * @property TypeChecker treal
+ * @property TypeChecker tresource
+ * @property TypeChecker tscalar
+ * @property TypeChecker ​tstring
+ */
 class TypeChecker
 {
-    use SingletonTrait;
+    protected $file;
+    protected $line;
+    protected $class;
+    protected $function;
+    protected $type;
 
-    /** @var string */
-    protected $lastCheckedName;
-    /** @var mixed */
-    protected $lastCheckedValue;
-    /** @var string[] */
-    protected $lastCheckedTypes;
+    protected $value;
+    protected $index;
 
-    /** @var bool */
     protected $isValid = false;
+    protected $inner = false;
+
+    protected $types = [];
+    protected $innerTypes = [];
 
     /**
-     * @param string $name
-     * @param mixed $value
-     * @return TypeChecker
-     * @throws ArgumentTypeException
+     * NewTypeChecker constructor.
+     *
+     * @param array $backTraceData
+     * @param int $paramIndex
      */
-    public function isBool($value, $name = '')
+    public function __construct(array $backTraceData, $paramIndex)
     {
-        return $this->check($value, [SimpleTypes::BOOL], $name);
+        $this->line = $backTraceData['line'];
+        $this->file = $backTraceData['file'];
+        $this->class = $backTraceData['class'];
+        $this->function = $backTraceData['function'];
+        $this->type = $backTraceData['type'];
+        $this->index = $paramIndex;
+        $this->value = $backTraceData['args'][$paramIndex];
+    }
+
+    /**
+     * @param $name
+     *
+     * @return TypeChecker
+     */
+    /** @noinspection MagicMethodsValidityInspection */
+    public function __get($name)
+    {
+        if ($this->inner) {
+            return $this->checkSimpleArray($name);
+        }
+        return $this->checkSimple($name);
+    }
+
+    /**
+     * @param callable $callback
+     * @return $this
+     */
+    public function callback(callable $callback)
+    {
+        $this->isValid = $this->isValid || $callback($this->value);
+        return $this;
     }
 
     /**
      * @param string $name
-     * @param mixed $value
-     * @return TypeChecker
-     * @throws ArgumentTypeException
+     * @return $this
      */
-    public function isString($value, $name = '')
+    protected function checkSimple($name)
     {
-        return $this->check($value, [SimpleTypes::STRING], $name);
+        $method = "is_$name";
+        $this->types[] = $name;
+        $this->isValid = $this->isValid || $method($this->value);
+        return $this;
     }
 
     /**
      * @param string $name
-     * @param mixed $value
-     * @return TypeChecker
-     * @throws ArgumentTypeException
+     * @return $this
      */
-    public function isInt($value, $name = '')
+    protected function checkSimpleArray($name)
     {
-        return $this->check($value, [SimpleTypes::INT], $name);
+        if(!is_array($this->value)){
+            return $this;
+        }
+        $method = "is_$name";
+        $this->innerTypes[] = $name;
+        $res = true;
+        foreach ($this->value as $item) {
+            $res = $res && $method($item);
+        }
+        $this->isValid = $this->isValid || $res;
+        return $this;
     }
 
     /**
-     * @param string $name
-     * @param mixed $value
-     * @return TypeChecker
-     * @throws ArgumentTypeException
+     * @return $this
      */
-    public function isArr($value, $name = '')
+    public function inner()
     {
-        return $this->check($value, [SimpleTypes::ARR], $name);
+        $this->inner = true;
+        return $this;
     }
 
     /**
-     * @param string $name
-     * @param mixed $value
-     * @return TypeChecker
-     * @throws ArgumentTypeException
+     * @param string[] ...$types
+     *
+     * @return $this
      */
-    public function isFloat($value, $name = '')
+    public function types(...$types)
     {
-        return $this->check($value, [SimpleTypes::FLOAT], $name);
-    }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return TypeChecker
-     * @throws ArgumentTypeException
-     */
-    public function isObj($value, $name = '')
-    {
-        return $this->check($value, [SimpleTypes::OBJ], $name);
-    }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return TypeChecker
-     * @throws ArgumentTypeException
-     */
-    public function isResource($value, $name = '')
-    {
-        return $this->check($value, [SimpleTypes::RESOURCE], $name);
-    }
-
-    /**
-     * @param string $name
-     * @param mixed $value
-     * @return TypeChecker
-     * @throws ArgumentTypeException
-     */
-    public function isNull($value, $name = '')
-    {
-        return $this->check($value, [SimpleTypes::NULL], $name);
-    }
-
-    /**
-     * @param mixed $value
-     * @param string[] $expectedTypes
-     * @param string $name
-     * @return TypeChecker
-     * @throws ArgumentTypeException
-     */
-    public function check($value, array $expectedTypes = [], $name = '')
-    {
-        if (empty($expectedTypes)) {
-            $this->isValid = true;
-
+        if (count($types) === 0) {
+            $this->isValid = $this->isValid && true;
             return $this;
         }
 
-        if (!is_string($name)) {
-            throw new ArgumentTypeException('name', [SimpleTypes::STRING], $name);
+        if($this->inner && is_array($this->value)){
+            $res = true;
+            $this->innerTypes = array_merge($this->innerTypes, $types);
+            foreach ($this->value as $item) {
+                $res = $res && $this->checkValueTypes($item, $types);
+            }
+            $this->isValid = $this->isValid || $res;
+        } else {
+            $this->types = array_merge($this->types, $types);
+            $this->isValid = $this->isValid || $this->checkValueTypes($this->value, $types);
         }
 
-        $this->initLast($value, $expectedTypes, $name);
+        return $this;
+    }
 
+    protected function checkValueTypes($value, array $types)
+    {
         $res = false;
-        foreach ($expectedTypes as $type) {
-            $res = $res || (gettype($value) == $type) || is_a($value, $type);
+        foreach ($types as $type) {
+            $res = $res || is_a($value, $type);
         }
-        $this->isValid = $res;
 
-        return $this;
-    }
-
-    protected function initLast($value, $types, $name)
-    {
-        $this->lastCheckedName = $name;
-        $this->lastCheckedValue = $value;
-        $this->lastCheckedTypes = $types;
-    }
-
-
-    /**
-     * @param array $elements
-     * @param string[] $expectedTypes
-     * @param string $name
-     * @return TypeChecker
-     */
-    public function checkArray(array $elements, array $expectedTypes = [], $name = '')
-    {
-        if (empty($expectedTypes)) {
-            return true;
-        }
-        $res = true;
-        foreach ($elements as $el) {
-            $res = $res && $this->check($el, $expectedTypes)->result();
-        }
-        $this->initLast($elements, $expectedTypes, $name);
-        $this->isValid = $res;
-
-        return $this;
+        return $res;
     }
 
     /**
      * @throws ArgumentTypeException
      */
-    public function throwTypeErrorIfNotValid(){
-        if(!$this->isValid){
-            $this->throwTypeError();
+    public function fail()
+    {
+        if (!$this->isValid) {
+            throw new ArgumentTypeException($this);
         }
-    }
-
-    /**
-     * @throws ArgumentTypeException
-     */
-    public function throwTypeError()
-    {
-        throw new ArgumentTypeException($this->lastCheckedName, $this->lastCheckedTypes, $this->lastCheckedValue);
-    }
-
-    /**
-     * @param string $message
-     * @throws ArgumentException
-     */
-    public function throwCustomErrorIfNotValid($message = '')
-    {
-        if(!$this->isValid) {
-            $this->throwCustomError($message);
-        }
-    }
-
-    /**
-     * @param string $message
-     * @throws ArgumentException
-     */
-    public function throwCustomError($message = '')
-    {
-        throw new ArgumentException($message, $this->lastCheckedName);
     }
 
     /**
@@ -217,4 +183,46 @@ class TypeChecker
         return $this->isValid;
     }
 
+    /**
+     * @return string
+     */
+    public function getFile()
+    {
+        return $this->file;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLine()
+    {
+        return $this->line;
+    }
+
+    /**
+     * @return string
+     */
+    protected function getFullFunctionName()
+    {
+        return "{$this->class}{$this->type}{$this->function}";
+    }
+
+    /**
+     * @return string
+     */
+    public function getErrorMessage()
+    {
+        $typesStr = implode(', ', $this->types);
+        $innerTypesStr = implode(', ', $this->innerTypes);
+        $str = "Тип аргумента №{$this->index} в методе {$this->getFullFunctionName()} неверен. ";
+        if ($typesStr !== '') {
+            $str .= "Необходимые типы параметра: {$typesStr}. ";
+        }
+        if ($innerTypesStr !== '') {
+            $str .= "Необходимые типы элементов параметра: {$innerTypesStr}. ";
+        }
+        $str .= 'Получен тип: ' . gettype($this->value) . '.';
+
+        return $str;
+    }
 }

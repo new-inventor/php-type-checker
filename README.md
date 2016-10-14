@@ -6,59 +6,56 @@
 
 через composer
 
-`composer require new-inventor/type-checker`
+`composer require new-inventor/php-type-checker`
 
 ##Принцип работы
 
-Так как класс реализует шаблон проектирования "Одиночка" то сначала необходимо получить его экземпляр.
+Подключаем трейт к классу
 
-`$checker = TypeChecker::getInstance();`
+`use TypeCheck;`
 
-Если переменная должна иметь строго 1 тип то можно воспользоваться функциями проверки простых типов.
+После этого в классе появляется статический метод `param(int $paramIndex = 0)`
 
-Например для типа Integer:
+Теперь можно проверять типы.
+Простые типы:
+array
+bool
+callable
+double
+float
+int
+integer
+long
+null
+numeric
+object
+real
+resource
+scalar
+string
 
-`$checker->isInt($var, 'var');`
+Для проверки простых типов необходимо сделать следующее:
 
-здесь первый параметр - значение переменной, второй - имя переменной 
+`self::param(1)->tint->tstring->fail()`
+или
+`self::param(0)->tint->tstring->result()`
 
-Если переменная может быть нескольких типов, то следует воспользоваться методом `check`:
+метод `fail()` предназначен для бросания исключения
+метод `result()` предназначен для возвращения результата
 
-`$checker->check($var, [SimpleTypes::BOOL, '\Another\Class\Name'], 'var');`
+если надо проверить элементы параметра-массива то необходимо вызвать метод `inner()` и после него определять типы
 
-здесь вторым параметром передаются набор правильных классов.
+`self::param()->tstring->tarray->tint->inner()->tint->tstring->result()`
+проверка внутренних элементов будет происходить, только если параметр является массивом.
 
-Если необходимо проверить елементы **одномерного** массива:
+Для проверки типов можно вызвать метод `types()` в параметрах которого перечислить имена типов
 
-`$checker->checkArray($array, [SimpleTypes::BOOL, '\Another\Class\Name'], 'name');`
+`self::param()->types(MyClass::class, MyAnotherClass::class)`
 
-После проверки можно бросить исключение:
-
-`$checker->throwTypeErrorIfNotValid();`
-
-при этом исключение возникнет если параметр не отвечает заданным типам.
-
-Так же можно просто получить результат проверки:
-
-`$res = $checker->result();`
-
-##Немного usecase'ов
-
-При проверке пожно пользоваться цепочными вызовами:
-
-```
-TypeChecker::getInstance()
-    ->isInt($var, 'var')
-    ->throwTypeErrorIfNotValid();
-```
-
-При проверке элементов **одномерного** массива, для выбрасывания исключения стоит использовать метод `throwCustomErrorIfNotValid($message)`, так как при использовании другого метода ошибка будет некорректной.
-
-Можно использовать связку `result()` и `throwTypeError`/`throwCustomError`, например:
+если нужна более сложная проверка то используйте метод `callback(callable $callback)`
 
 ```
-if(!$checker->isInt($var, 'var')->result()){
-    ...
-    $checker->throwTypeError();
-}
+self::param()->int->float->callback(function ($value){
+    return $value > 10 && $value < 100;
+});
 ```

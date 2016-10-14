@@ -5,41 +5,21 @@
  * Time: 15:34
  */
 
-namespace NewInventor\TypeChecker\Exception;
+namespace NewInventor\Form\TypeChecker\Exception;
+
+use NewInventor\Form\TypeChecker\TypeChecker;
 
 class ArgumentTypeException extends \Exception
 {
     /**
      * ArgumentException constructor.
-     * @param string $argumentName
-     * @param string[] $argumentTypes
-     * @param mixed $value
-     * @param int $code
-     * @param \Exception|null $previous
+     *
+     * @param TypeChecker $checker
+     * @param int         $code
+     * @param \Exception  $previous
      */
-    public function __construct($argumentName = '', array $argumentTypes = [], $value = '', $code = 0, $previous = null)
+    public function __construct(TypeChecker $checker, $code = 0, \Exception $previous = null)
     {
-        parent::__construct($this->getMessageString($argumentName, $argumentTypes, $value), $code, $previous);
-    }
-
-    protected function getMessageString($argumentName, $argumentTypes, $value)
-    {
-        $str = 'Тип аргумента';
-        if(!empty($argumentName)){
-            $str .= ' "' . $argumentName . '"';
-        }
-        $str .= ' неверен.';
-        if(!empty($argumentTypes)){
-            $str .= ' Ожидался тип "' . implode('" или "', $argumentTypes) . '"';
-        }
-        if(!empty($value)){
-            $type = gettype($value);
-            if($type == 'object'){
-                $type = get_class($value);
-            }
-            $str .= ', получен "' . $type . '"';
-        }
-
-        return $str;
+        parent::__construct($checker->getErrorMessage(), $code, $previous);
     }
 }
