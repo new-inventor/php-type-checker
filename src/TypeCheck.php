@@ -18,6 +18,6 @@ trait TypeCheck
      */
     public static function param($paramIndex = 0)
     {
-        return new TypeChecker(debug_backtrace(null)[1], $paramIndex);
+        return new TypeChecker(debug_backtrace(null, 2)[1], $paramIndex);
     }
 }
