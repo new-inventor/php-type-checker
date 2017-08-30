@@ -13,22 +13,22 @@ use NewInventor\TypeChecker\Exception\ArgumentTypeException;
 
 /**
  * Class TypeChecker
- * @package NewInventor\Form\TypeChecker
- * @property TypeChecker ​tarray
+ * @package NewInventor\Form\TypeChecker *
+ * @property TypeChecker tarray
  * @property TypeChecker tbool
- * @property TypeChecker ​tcallable
+ * @property TypeChecker tcallable
  * @property TypeChecker tdouble
  * @property TypeChecker tfloat
  * @property TypeChecker tint
  * @property TypeChecker tinteger
  * @property TypeChecker tlong
- * @property TypeChecker ​tnull
+ * @property TypeChecker tnull
  * @property TypeChecker tnumeric
  * @property TypeChecker tobject
  * @property TypeChecker treal
  * @property TypeChecker tresource
  * @property TypeChecker tscalar
- * @property TypeChecker ​tstring
+ * @property TypeChecker tstring
  */
 class TypeChecker
 {
