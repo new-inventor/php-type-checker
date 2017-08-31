@@ -13,15 +13,18 @@ use NewInventor\TypeChecker\Exception\VariableTypeException;
 
 class TypeChecker
 {
-    /** @var string|null */
-    protected $file;
-    /** @var string|null */
-    protected $line;
-    /** @var string|null */
-    protected $class;
-    /** @var string|null */
-    protected $function;
-    /** @var string|null */
+    const TARRAY = 'array';
+    const TBOOL = 'bool';
+    const TCALLABLE = 'callable';
+    const TDOUBLE = 'double';
+    const TINTEGER = 'integer';
+    const TNULL = 'null';
+    const TNUMERIC = 'numeric';
+    const TOBJECT = 'object';
+    const TRESOURCE = 'resource';
+    const TSCALAR = 'scalar';
+    const TSTRING = 'string';
+    /** @var string */
     protected $type;
     protected $value;
     /** @var int */
@@ -44,6 +47,7 @@ class TypeChecker
     public function __construct($value)
     {
         $this->value = $value;
+        $this->type = gettype($value);
     }
     
     public function setBackTrace(array $backTrace)
@@ -51,6 +55,14 @@ class TypeChecker
         $this->backtrace = $backTrace;
         
         return $this;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
     }
     
     /**
@@ -163,7 +175,7 @@ class TypeChecker
      */
     public function tarray()
     {
-        return $this->checkSimpleType('array');
+        return $this->checkSimpleType(self::TARRAY);
     }
     
     /**
@@ -171,7 +183,7 @@ class TypeChecker
      */
     public function tbool()
     {
-        return $this->checkSimpleType('bool');
+        return $this->checkSimpleType(self::TBOOL);
     }
     
     /**
@@ -179,7 +191,7 @@ class TypeChecker
      */
     public function tcallable()
     {
-        return $this->checkSimpleType('callable');
+        return $this->checkSimpleType(self::TCALLABLE);
     }
     
     /**
@@ -187,23 +199,7 @@ class TypeChecker
      */
     public function tdouble()
     {
-        return $this->checkSimpleType('double');
-    }
-    
-    /**
-     * @return TypeChecker
-     */
-    public function tfloat()
-    {
-        return $this->checkSimpleType('float');
-    }
-    
-    /**
-     * @return TypeChecker
-     */
-    public function tint()
-    {
-        return $this->checkSimpleType('int');
+        return $this->checkSimpleType(self::TDOUBLE);
     }
     
     /**
@@ -211,15 +207,7 @@ class TypeChecker
      */
     public function tinteger()
     {
-        return $this->checkSimpleType('integer');
-    }
-    
-    /**
-     * @return TypeChecker
-     */
-    public function tlong()
-    {
-        return $this->checkSimpleType('long');
+        return $this->checkSimpleType(self::TINTEGER);
     }
     
     /**
@@ -227,7 +215,7 @@ class TypeChecker
      */
     public function tnull()
     {
-        return $this->checkSimpleType('null');
+        return $this->checkSimpleType(self::TNULL);
     }
     
     /**
@@ -235,7 +223,7 @@ class TypeChecker
      */
     public function tnumeric()
     {
-        return $this->checkSimpleType('numeric');
+        return $this->checkSimpleType(self::TNUMERIC);
     }
     
     /**
@@ -243,15 +231,7 @@ class TypeChecker
      */
     public function tobject()
     {
-        return $this->checkSimpleType('object');
-    }
-    
-    /**
-     * @return TypeChecker
-     */
-    public function treal()
-    {
-        return $this->checkSimpleType('real');
+        return $this->checkSimpleType(self::TOBJECT);
     }
     
     /**
@@ -259,7 +239,7 @@ class TypeChecker
      */
     public function tresource()
     {
-        return $this->checkSimpleType('resource');
+        return $this->checkSimpleType(self::TRESOURCE);
     }
     
     /**
@@ -267,7 +247,7 @@ class TypeChecker
      */
     public function tscalar()
     {
-        return $this->checkSimpleType('scalar');
+        return $this->checkSimpleType(self::TSCALAR);
     }
     
     /**
@@ -275,15 +255,23 @@ class TypeChecker
      */
     public function tstring()
     {
-        return $this->checkSimpleType('string');
+        return $this->checkSimpleType(self::TSTRING);
     }
     
     protected function checkSimpleType($type)
     {
         if ($this->inner) {
-            $this->isValid = $this->isValid || $this->checkArraySimple($type);
+            $res = $this->checkArraySimple($type);
+            if($res){
+                $this->type = $type;
+            }
+            $this->isValid = $this->isValid || $res;
         } else {
-            $this->isValid = $this->isValid || $this->checkSimple($type);
+            $res = $this->checkSimple($type);
+            if($res){
+                $this->type = $type;
+            }
+            $this->isValid = $this->isValid || $res;
         }
         
         return $this;
