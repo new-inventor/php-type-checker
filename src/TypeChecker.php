@@ -11,42 +11,30 @@ namespace NewInventor\TypeChecker;
 
 use NewInventor\TypeChecker\Exception\ArgumentTypeException;
 
-/**
- * Class TypeChecker
- * @package NewInventor\Form\TypeChecker *
- * @property TypeChecker tarray
- * @property TypeChecker tbool
- * @property TypeChecker tcallable
- * @property TypeChecker tdouble
- * @property TypeChecker tfloat
- * @property TypeChecker tint
- * @property TypeChecker tinteger
- * @property TypeChecker tlong
- * @property TypeChecker tnull
- * @property TypeChecker tnumeric
- * @property TypeChecker tobject
- * @property TypeChecker treal
- * @property TypeChecker tresource
- * @property TypeChecker tscalar
- * @property TypeChecker tstring
- */
 class TypeChecker
 {
+    /** @var string|null */
     protected $file;
+    /** @var string|null */
     protected $line;
+    /** @var string|null */
     protected $class;
+    /** @var string|null */
     protected $function;
+    /** @var string|null */
     protected $type;
-
     protected $value;
+    /** @var int */
     protected $index;
-
+    /** @var bool */
     protected $isValid = false;
+    /** @var bool */
     protected $inner = false;
-
+    /** @var array */
     protected $types = [];
+    /** @var array */
     protected $innerTypes = [];
-
+    
     /**
      * NewTypeChecker constructor.
      *
@@ -63,22 +51,7 @@ class TypeChecker
         $this->index = $paramIndex;
         $this->value = $backTraceData['args'][$paramIndex];
     }
-
-    /**
-     * @param $name
-     *
-     * @return TypeChecker
-     */
-    /** @noinspection MagicMethodsValidityInspection */
-    public function __get($name)
-    {
-        $name = substr($name, 1);
-        if ($this->inner) {
-            return $this->checkSimpleArray($name);
-        }
-        return $this->checkSimple($name);
-    }
-
+    
     /**
      * @param callable $callback
      *
@@ -87,9 +60,10 @@ class TypeChecker
     public function callback(callable $callback)
     {
         $this->isValid = $this->isValid || $callback($this->value);
+        
         return $this;
     }
-
+    
     /**
      * @param string $name
      *
@@ -100,9 +74,10 @@ class TypeChecker
         $method = "is_$name";
         $this->types[] = $name;
         $this->isValid = $this->isValid || $method($this->value);
+        
         return $this;
     }
-
+    
     /**
      * @param string $name
      *
@@ -120,18 +95,20 @@ class TypeChecker
             $res = $res && $method($item);
         }
         $this->isValid = $this->isValid || $res;
+        
         return $this;
     }
-
+    
     /**
      * @return TypeChecker
      */
     public function inner()
     {
         $this->inner = true;
+        
         return $this;
     }
-
+    
     /**
      * @param string[] ...$types
      *
@@ -140,13 +117,15 @@ class TypeChecker
     public function types(...$types)
     {
         if (count($types) === 0) {
-            $this->isValid = $this->isValid && true;
+            $this->isValid = true;
+            
             return $this;
         }
-
+        
         if ($this->inner && is_array($this->value)) {
             $res = true;
             $this->innerTypes = array_merge($this->innerTypes, $types);
+            /** @noinspection ForeachSourceInspection */
             foreach ($this->value as $item) {
                 $res = $res && $this->checkValueTypes($item, $types);
             }
@@ -155,20 +134,20 @@ class TypeChecker
             $this->types = array_merge($this->types, $types);
             $this->isValid = $this->isValid || $this->checkValueTypes($this->value, $types);
         }
-
+        
         return $this;
     }
-
+    
     protected function checkValueTypes($value, array $types)
     {
         $res = false;
         foreach ($types as $type) {
             $res = $res || is_a($value, $type);
         }
-
+        
         return $res;
     }
-
+    
     /**
      * @throws ArgumentTypeException
      */
@@ -178,7 +157,7 @@ class TypeChecker
             throw new ArgumentTypeException($this);
         }
     }
-
+    
     /**
      * @return bool
      */
@@ -186,7 +165,7 @@ class TypeChecker
     {
         return $this->isValid;
     }
-
+    
     /**
      * @return string
      */
@@ -194,7 +173,7 @@ class TypeChecker
     {
         return $this->file;
     }
-
+    
     /**
      * @return string
      */
@@ -202,7 +181,7 @@ class TypeChecker
     {
         return $this->line;
     }
-
+    
     /**
      * @return string
      */
@@ -210,7 +189,7 @@ class TypeChecker
     {
         return "{$this->class}{$this->type}{$this->function}";
     }
-
+    
     /**
      * @return string
      */
@@ -226,7 +205,217 @@ class TypeChecker
             $str .= "Необходимые типы элементов параметра: {$innerTypesStr}. ";
         }
         $str .= 'Получен тип: ' . gettype($this->value) . '.';
-
+        
         return $str;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tarray()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('array');
+        } else {
+            $this->checkSimple('array');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tbool()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('bool');
+        } else {
+            $this->checkSimple('bool');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tcallable()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('callable');
+        } else {
+            $this->checkSimple('callable');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tdouble()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('double');
+        } else {
+            $this->checkSimple('double');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tfloat()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('float');
+        } else {
+            $this->checkSimple('float');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tint()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('int');
+        } else {
+            $this->checkSimple('int');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tinteger()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('integer');
+        } else {
+            $this->checkSimple('integer');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tlong()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('long');
+        } else {
+            $this->checkSimple('long');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tnull()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('null');
+        } else {
+            $this->checkSimple('null');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tnumeric()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('numeric');
+        } else {
+            $this->checkSimple('numeric');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tobject()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('object');
+        } else {
+            $this->checkSimple('object');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function treal()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('real');
+        } else {
+            $this->checkSimple('real');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tresource()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('resource');
+        } else {
+            $this->checkSimple('resource');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tscalar()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('scalar');
+        } else {
+            $this->checkSimple('scalar');
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * @return $this
+     */
+    public function tstring()
+    {
+        if ($this->inner) {
+            $this->checkSimpleArray('string');
+        } else {
+            $this->checkSimple('string');
+        }
+        
+        return $this;
     }
 }
