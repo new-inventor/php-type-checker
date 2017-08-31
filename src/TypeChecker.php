@@ -14,7 +14,7 @@ use NewInventor\TypeChecker\Exception\VariableTypeException;
 class TypeChecker
 {
     const TARRAY = 'array';
-    const TBOOL = 'bool';
+    const TBOOL = 'boolean';
     const TCALLABLE = 'callable';
     const TDOUBLE = 'double';
     const TINTEGER = 'integer';
@@ -181,7 +181,7 @@ class TypeChecker
     /**
      * @return TypeChecker
      */
-    public function tbool()
+    public function tboolean()
     {
         return $this->checkSimpleType(self::TBOOL);
     }
