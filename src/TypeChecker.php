@@ -183,7 +183,7 @@ class TypeChecker
      */
     public function tboolean()
     {
-        return $this->checkSimpleType(self::TBOOL);
+        return $this->checkSimpleType(self::TBOOLEAN);
     }
     
     /**
