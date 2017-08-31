@@ -14,7 +14,7 @@ use NewInventor\TypeChecker\Exception\VariableTypeException;
 class TypeChecker
 {
     const TARRAY = 'array';
-    const TBOOL = 'boolean';
+    const TBOOLEAN = 'boolean';
     const TCALLABLE = 'callable';
     const TDOUBLE = 'double';
     const TINTEGER = 'integer';
