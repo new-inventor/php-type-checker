@@ -27,7 +27,7 @@ class TypeChecker
     /** @var int */
     protected $index;
     /** @var bool */
-    protected $isValid = true;
+    protected $isValid = false;
     /** @var bool */
     protected $inner = false;
     /** @var array */
@@ -281,9 +281,9 @@ class TypeChecker
     protected function checkSimpleType($type)
     {
         if ($this->inner) {
-            $this->isValid = $this->isValid && $this->checkArraySimple($type);
+            $this->isValid = $this->isValid || $this->checkArraySimple($type);
         } else {
-            $this->isValid = $this->isValid && $this->checkSimple($type);
+            $this->isValid = $this->isValid || $this->checkSimple($type);
         }
         
         return $this;
