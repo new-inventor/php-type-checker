@@ -9,15 +9,43 @@
 namespace NewInventor\TypeChecker;
 
 
+use NewInventor\TypeChecker\Exception\ArgumentTypeException;
+
 trait TypeCheck
 {
     /**
      * @param int $paramIndex
      *
      * @return TypeChecker
+     * @throws \NewInventor\TypeChecker\Exception\ArgumentTypeException
      */
     public static function param($paramIndex = 0)
     {
-        return new TypeChecker(debug_backtrace(null, 2)[1], (int)$paramIndex);
+        if(!is_numeric($paramIndex)){
+            throw new ArgumentTypeException(debug_backtrace(null, 1)[0], 0, $paramIndex, ['int']);
+        }
+        $paramIndex = (int)$paramIndex;
+        $trace = debug_backtrace(null, 2)[1];
+        $typeChecker = new TypeChecker($trace['args'][$paramIndex]);
+        $typeChecker
+            ->setBackTrace($trace)
+            ->setIndex($paramIndex)
+        ;
+        
+        return $typeChecker;
+    }
+    
+    /**
+     * @param $value
+     *
+     * @return TypeChecker
+     */
+    public static function variable($value)
+    {
+        $trace = debug_backtrace(null, 2)[1];
+        $typeChecker = new TypeChecker($value);
+        $typeChecker->setBackTrace($trace);
+    
+        return $typeChecker;
     }
 }

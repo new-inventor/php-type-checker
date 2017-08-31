@@ -7,19 +7,31 @@
 
 namespace NewInventor\TypeChecker\Exception;
 
-use NewInventor\TypeChecker\TypeChecker;
 
-class ArgumentTypeException extends \Exception
+class ArgumentTypeException extends VariableTypeException
 {
+    /**
+     * @var int
+     */
+    protected $index;
+    
     /**
      * ArgumentException constructor.
      *
-     * @param TypeChecker $checker
-     * @param int         $code
-     * @param \Exception  $previous
+     * @param array $backtrace
+     * @param int   $index
+     * @param mixed $value
+     * @param array $types
+     * @param array $innerTypes
      */
-    public function __construct(TypeChecker $checker, $code = 0, \Exception $previous = null)
+    public function __construct(array $backtrace, $index, $value, array $types, array $innerTypes = [])
     {
-        parent::__construct($checker->getErrorMessage(), $code, $previous);
+        parent::__construct($backtrace, $value, $types, $innerTypes);
+        $this->index = $index;
+    }
+    
+    protected function getBaseErrorMessage()
+    {
+        return "The type of the argument №{$this->index} in the method {$this->getFullFunctionName()} is incorrect.";
     }
 }
