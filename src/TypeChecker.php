@@ -16,7 +16,7 @@ class TypeChecker
     const TARRAY = 'array';
     const TBOOLEAN = 'boolean';
     const TCALLABLE = 'callable';
-    const TDOUBLE = 'double';
+    const TFLOAT = 'float';
     const TINTEGER = 'integer';
     const TNULL = 'null';
     const TNUMERIC = 'numeric';
@@ -197,9 +197,9 @@ class TypeChecker
     /**
      * @return TypeChecker
      */
-    public function tdouble()
+    public function tfloat()
     {
-        return $this->checkSimpleType(self::TDOUBLE);
+        return $this->checkSimpleType(self::TFLOAT);
     }
     
     /**
