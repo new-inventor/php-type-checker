@@ -21,11 +21,11 @@ class VariableTypeException extends \Exception
     /**
      * @var array
      */
-    protected $types;
+    protected $types = [];
     /**
      * @var array
      */
-    protected $innerTypes;
+    protected $innerTypes = [];
     
     /**
      * ArgumentException constructor.
@@ -49,13 +49,13 @@ class VariableTypeException extends \Exception
      */
     public function getErrorMessage()
     {
-        $typesStr = implode(', ', $this->types);
-        $innerTypesStr = implode(', ', $this->innerTypes);
         $str = $this->getBaseErrorMessage();
-        if ($typesStr !== '') {
+        if (!empty($this->types)) {
+            $typesStr = implode(', ', $this->types);
             $str .= "\nRequired argument type{$this->isOrAreType()}: {$typesStr}. ";
         }
-        if ($innerTypesStr !== '') {
+        if (!empty($this->innerTypes)) {
+            $innerTypesStr = implode(', ', $this->innerTypes);
             $str .= "\nRequired argument elements type{$this->isOrAreType()}: {$innerTypesStr}. ";
         }
         $str .= PHP_EOL .
