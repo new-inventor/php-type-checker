@@ -156,9 +156,9 @@ class TypeChecker
     {
         if (!$this->isValid) {
             if ($this->index === null) {
-                throw new ArgumentTypeException($this->backtrace, $this->index, $this->value, $this->types, $this->innerTypes);
+                throw new VariableTypeException($this->backtrace, $this->value, $this->types, $this->innerTypes);
             }
-            throw new VariableTypeException($this->backtrace, $this->value, $this->types, $this->innerTypes);
+            throw new ArgumentTypeException($this->backtrace, $this->index, $this->value, $this->types, $this->innerTypes);
         }
     }
     
