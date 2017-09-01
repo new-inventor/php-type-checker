@@ -14,10 +14,10 @@ use NewInventor\TypeChecker\Exception\VariableTypeException;
 class TypeChecker
 {
     const TARRAY = 'array';
-    const TBOOLEAN = 'boolean';
+    const TBOOL = 'bool';
     const TCALLABLE = 'callable';
     const TFLOAT = 'float';
-    const TINTEGER = 'integer';
+    const TINT = 'int';
     const TNULL = 'null';
     const TNUMERIC = 'numeric';
     const TOBJECT = 'object';
@@ -181,9 +181,9 @@ class TypeChecker
     /**
      * @return TypeChecker
      */
-    public function tboolean()
+    public function tbool()
     {
-        return $this->checkSimpleType(self::TBOOLEAN);
+        return $this->checkSimpleType(self::TBOOL);
     }
     
     /**
@@ -205,9 +205,9 @@ class TypeChecker
     /**
      * @return TypeChecker
      */
-    public function tinteger()
+    public function tint()
     {
-        return $this->checkSimpleType(self::TINTEGER);
+        return $this->checkSimpleType(self::TINT);
     }
     
     /**
