@@ -8,7 +8,7 @@
 namespace NewInventor\TypeChecker\Exception;
 
 
-class VariableTypeException extends \Exception
+class TypeException extends \Exception
 {
     /**
      * @var array
@@ -26,22 +26,27 @@ class VariableTypeException extends \Exception
      * @var array
      */
     protected $innerTypes = [];
+    /** @var int */
+    private $invalidInner;
     
     /**
      * ArgumentException constructor.
      *
-     * @param array $backtrace
-     * @param mixed   $value
+     * @param mixed $value
      * @param array $types
      * @param array $innerTypes
+     * @param int   $invalidInner
+     *
+     * @internal param array $backtrace
      */
-    public function __construct(array $backtrace, $value, array $types, array $innerTypes = [])
+    public function __construct($value, array $types, array $innerTypes = [], $invalidInner)
     {
-        parent::__construct($this->getErrorMessage());
-        $this->backtrace = $backtrace;
+        $this->backtrace = debug_backtrace(null, 3)[2];
         $this->value = $value;
         $this->types = $types;
         $this->innerTypes = $innerTypes;
+        $this->invalidInner = $invalidInner;
+        parent::__construct($this->getErrorMessage());
     }
     
     /**
@@ -49,21 +54,33 @@ class VariableTypeException extends \Exception
      */
     public function getErrorMessage()
     {
-        $str = $this->getBaseErrorMessage();
+        return $this->getBaseErrorMessage() .
+               $this->getValueErrorMessage() .
+               $this->getElementErrorMessage();
+    }
+    
+    protected function getValueErrorMessage()
+    {
         if (!empty($this->types)) {
             $typesStr = implode(', ', $this->types);
-            $str .= "\nRequired argument type{$this->isOrAreType()}: {$typesStr}. ";
+            
+            return "\nRequired type{$this->isOrAreType($this->types)}: {$typesStr} \nType received: " .
+                   gettype($this->value);
         }
+        
+        return '';
+    }
+    
+    protected function getElementErrorMessage()
+    {
         if (!empty($this->innerTypes)) {
             $innerTypesStr = implode(', ', $this->innerTypes);
-            $str .= "\nRequired argument elements type{$this->isOrAreType()}: {$innerTypesStr}. ";
+            
+            return "\nRequired elements type{$this->isOrAreType($this->innerTypes)}: {$innerTypesStr}\nType received: " .
+                   gettype($this->value[$this->invalidInner]);
         }
-        $str .= PHP_EOL .
-                'Type received: ' .
-                gettype($this->value) .
-                ".\nFile: {$this->backtrace['file']}\nLine: {$this->backtrace['line']}.";
         
-        return $str;
+        return '';
     }
     
     /**
@@ -83,10 +100,12 @@ class VariableTypeException extends \Exception
     }
     
     /**
+     * @param $types
+     *
      * @return string
      */
-    protected function isOrAreType()
+    protected function isOrAreType($types)
     {
-        return (count($this->types) === 1 ? ' is' : 's are');
+        return (count($types) === 1 ? ' is' : 's are');
     }
 }

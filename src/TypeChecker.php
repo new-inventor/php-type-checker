@@ -8,8 +8,7 @@
 namespace NewInventor\TypeChecker;
 
 
-use NewInventor\TypeChecker\Exception\ArgumentTypeException;
-use NewInventor\TypeChecker\Exception\VariableTypeException;
+use NewInventor\TypeChecker\Exception\TypeException;
 
 class TypeChecker
 {
@@ -24,61 +23,52 @@ class TypeChecker
     const TRESOURCE = 'resource';
     const TSCALAR = 'scalar';
     const TSTRING = 'string';
-    /** @var string */
-    protected $type;
     protected $value;
-    /** @var int */
-    protected $index;
     /** @var bool */
     protected $isValid = false;
+    /** @var bool[] */
+    protected $isValidInner = [];
     /** @var bool */
     protected $inner = false;
     /** @var array */
     protected $types = [];
     /** @var array */
     protected $innerTypes = [];
-    private $backtrace;
+    /** @var int */
+    protected $invalidInner;
+    /** @var TypeChecker */
+    private static $instance;
     
     /**
-     * TypeChecker constructor.
-     *
      * @param $value
-     */
-    public function __construct($value)
-    {
-        $this->value = $value;
-        $this->type = gettype($value);
-    }
-    
-    public function setBackTrace(array $backTrace)
-    {
-        $this->backtrace = $backTrace;
-        
-        return $this;
-    }
-    
-    /**
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-    
-    /**
-     * @param null|int $index
      *
      * @return TypeChecker
-     * @throws \NewInventor\TypeChecker\Exception\ArgumentTypeException
      */
-    public function setIndex($index = null)
+    public function validate($value)
     {
-        if(!is_numeric($index)){
-            throw new ArgumentTypeException(debug_backtrace(null, 1)[0], 0, $index, ['int']);
-        }
-        $this->index = (int)$index;
-        
+        $this->isValid = false;
+        $this->isValidInner = null;
+        $this->types = [];
+        $this->innerTypes = [];
+        $this->value = $value;
+        $this->inner = false;
+        $this->invalidInner = null;
+    
         return $this;
+    }
+    
+    /**
+     * @param $value
+     *
+     * @return TypeChecker
+     */
+    public static function check($value)
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+    
+        return self::$instance->validate($value);
     }
     
     /**
@@ -88,7 +78,22 @@ class TypeChecker
      */
     public function callback(callable $callback)
     {
-        $this->isValid = $this->isValid || $callback($this->value);
+        if ($this->inner) {
+            if (!is_array($this->value)) {
+                return $this;
+            }
+            $this->innerTypes[] = 'callback';
+            /** @noinspection ForeachSourceInspection */
+            foreach ($this->value as $key => $item) {
+                $subRes = $callback($item);
+                if ($this->invalidInner === null && !$subRes) {
+                    $this->invalidInner = $key;
+                }
+                $this->isValidInner[$key] = $this->isValidInner[$key] || $subRes;
+            }
+        } else {
+            $this->isValid = $this->isValid || $callback($this->value);
+        }
         
         return $this;
     }
@@ -98,7 +103,16 @@ class TypeChecker
      */
     public function inner()
     {
+    
+        if (!array_key_exists(self::TARRAY, $this->types)) {
+            $this->checkSimpleType(self::TARRAY);
+        }
         $this->inner = true;
+        if (is_array($this->value)) {
+            foreach ($this->value as $key => $item) {
+                $this->isValidInner[$key] = false;
+            }
+        }
         
         return $this;
     }
@@ -111,19 +125,22 @@ class TypeChecker
     public function types(...$types)
     {
         if (count($types) === 0) {
-            $this->isValid = true;
-            
             return $this;
         }
-        
-        if ($this->inner && is_array($this->value)) {
-            $res = true;
+    
+        if ($this->inner) {
+            if (!is_array($this->value)) {
+                return $this;
+            }
             $this->innerTypes = array_merge($this->innerTypes, $types);
             /** @noinspection ForeachSourceInspection */
-            foreach ($this->value as $item) {
-                $res = $res && $this->checkValueTypes($item, $types);
+            foreach ($this->value as $key => $item) {
+                $subRes = $this->checkValueTypes($item, $types);
+                if ($this->invalidInner === null && !$subRes) {
+                    $this->invalidInner = $key;
+                }
+                $this->isValidInner[$key] = $this->isValidInner[$key] || $subRes;
             }
-            $this->isValid = $this->isValid || $res;
         } else {
             $this->types = array_merge($this->types, $types);
             $this->isValid = $this->isValid || $this->checkValueTypes($this->value, $types);
@@ -149,16 +166,12 @@ class TypeChecker
     }
     
     /**
-     * @throws ArgumentTypeException
-     * @throws VariableTypeException
+     * @throws TypeException
      */
     public function fail()
     {
-        if (!$this->isValid) {
-            if ($this->index === null) {
-                throw new VariableTypeException($this->backtrace, $this->value, $this->types, $this->innerTypes);
-            }
-            throw new ArgumentTypeException($this->backtrace, $this->index, $this->value, $this->types, $this->innerTypes);
+        if (!$this->result()) {
+            throw new TypeException($this->value, $this->types, $this->innerTypes, $this->invalidInner);
         }
     }
     
@@ -167,7 +180,14 @@ class TypeChecker
      */
     public function result()
     {
-        return $this->isValid;
+        $res = $this->isValid;
+        if ($this->isValidInner !== null) {
+            foreach ($this->isValidInner as $value) {
+                $res = $res && $value;
+            }
+        }
+    
+        return $res;
     }
     
     /**
@@ -261,17 +281,9 @@ class TypeChecker
     protected function checkSimpleType($type)
     {
         if ($this->inner) {
-            $res = $this->checkArraySimple($type);
-            if($res){
-                $this->type = $type;
-            }
-            $this->isValid = $this->isValid || $res;
+            $this->checkArraySimple($type);
         } else {
-            $res = $this->checkSimple($type);
-            if($res){
-                $this->type = $type;
-            }
-            $this->isValid = $this->isValid || $res;
+            $this->isValid = $this->isValid || $this->checkSimple($type);
         }
         
         return $this;
@@ -280,21 +292,23 @@ class TypeChecker
     /**
      * @param string $name
      *
-     * @return bool
+     * @return void
      */
     protected function checkArraySimple($name)
     {
         if (!is_array($this->value)) {
-            return true;
+            return;
         }
         $method = "is_$name";
         $this->innerTypes[] = $name;
-        $res = true;
-        foreach ($this->value as $item) {
-            $res = $res && $method($item);
+        foreach ($this->value as $key => $item) {
+            $subRes = $method($item);
+            if ($this->invalidInner === null && !$subRes) {
+                $this->invalidInner = $key;
+            }
+            $this->isValidInner[$key] =
+                (isset($this->isValidInner[$key]) ? $this->isValidInner[$key] : false) || $subRes;
         }
-        
-        return $res;
     }
     
     /**
@@ -304,7 +318,7 @@ class TypeChecker
      */
     protected function checkSimple($name)
     {
-        $this->types[] = $name;
+        $this->types[$name] = $name;
         $method = "is_$name";
         
         return $method($this->value);

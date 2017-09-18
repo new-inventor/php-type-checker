@@ -10,52 +10,46 @@
 
 ##Принцип работы
 
-Подключаем трейт к классу
-
-`use TypeCheck;`
-
-После этого в классе появляется статический метод `param(int $paramIndex = 0)`
+Вызываем статический метод `TypeChecker::check($value)`
 
 Теперь можно проверять типы.
+
 Простые типы:
-array
-bool
-callable
-double
-float
-int
-integer
-long
-null
-numeric
-object
-real
-resource
-scalar
-string
+* array
+* bool
+* callable
+* float
+* int
+* null
+* numeric
+* object
+* resource
+* scalar
+* string
 
 Для проверки простых типов необходимо сделать следующее:
 
-`self::param(1)->tint()->tstring()->fail()`
+`TypeChecker::check($value)->tint()->tstring()->fail()`
 или
-`self::param(0)->tint()->tstring()->result()`
+`TypeChecker::check($value)->tint()->tstring()->result()`
 
-метод `fail()` предназначен для бросания исключения
-метод `result()` предназначен для возвращения результата
+* метод `fail()` предназначен для бросания исключения(`TPMailSender\TypeChecker\Exception\TypeException`)
+* метод `result()` предназначен для возвращения результата проверки
 
-если надо проверить элементы параметра-массива то необходимо вызвать метод `inner()` и после него определять типы
+Если надо проверить элементы параметра-массива то необходимо вызвать метод `inner()` и после него определять типы.
+Можно не вызывать функцию `tarray()` перед вызовом метода `inner()`
 
-`self::param()->tstring()->tarray()->tint()->inner()->tint()->tstring()->result()`
+`TypeChecker::check($value)->tstring()->tarray()->tint()->inner()->tint()->tstring()->result()`
 проверка внутренних элементов будет происходить, только если параметр является массивом.
 
-Для проверки типов можно вызвать метод `types()` в параметрах которого перечислить имена типов
+Для проверки типов объектов вызвается метод `types()` в параметрах которого перечисляются полные имена типов
 
-`self::param()->types(MyClass::class, MyAnotherClass::class)`
+`TypeChecker::check($value)->types(MyClass::class, MyAnotherClass::class)`
 
 если нужна более сложная проверка то используйте метод `callback(callable $callback)`
 
 ```
-self::param()->tint()->tfloat()->callback(function ($value){
-    return $value > 10 && $value < 100;
+self::param()->tint()->tfloat()->tstring()->callback(function ($value){
+    return is_object($value) && method_exists($value, '__toString');
 });
 ```
