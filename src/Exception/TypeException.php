@@ -39,7 +39,7 @@ class TypeException extends \Exception
      *
      * @internal param array $backtrace
      */
-    public function __construct($value, array $types, array $innerTypes = [], $invalidInner)
+    public function __construct($value, array $types, array $innerTypes = [], $invalidInner = 0)
     {
         $this->backtrace = debug_backtrace(null, 3)[2];
         $this->value = $value;
